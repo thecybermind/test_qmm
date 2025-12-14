@@ -1,6 +1,7 @@
 /*
-TEST_QMM - QMM plugin for testing various QMM features
+TEST_QMM - QMM plugin for testing QMM features in development
 Copyright 2004-2025
+https://github.com/thecybermind/test_qmm/
 3-clause BSD license: https://opensource.org/license/bsd-3-clause
 
 Created By:
@@ -18,7 +19,6 @@ Created By:
 #include "version.h"
 #include "game.h"
 
-#include <string>
 #include <string.h>
 
 pluginres_t* g_result = nullptr;
