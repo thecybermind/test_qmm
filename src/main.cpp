@@ -29,7 +29,7 @@ plugininfo_t g_plugininfo = {
 	TEST_QMM_VERSION,							// version of plugin
 	"Test plugin",								// description of plugin
 	TEST_QMM_BUILDER,							// author of plugin
-	"https://github.com/thecybermind/qmm2",		// website of plugin
+	"https://github.com/thecybermind/test_qmm",	// website of plugin
 };
 eng_syscall_t g_syscall = nullptr;
 mod_vmMain_t g_vmMain = nullptr;
