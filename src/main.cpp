@@ -9,7 +9,7 @@ Created By:
 
 */
 
-#define TEST_CFG
+// #define TEST_CFG
 #define TEST_RETURN_TEST
 
 #define _CRT_SECURE_NO_WARNINGS 1
