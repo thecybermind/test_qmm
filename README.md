@@ -4,5 +4,5 @@ Copyright 2004-2025
 https://github.com/thecybermind/test_qmm/  
 3-clause BSD license: https://opensource.org/license/bsd-3-clause  
 
-Created By: Kevin Masterson < cybermind@gmail.com >
+Created By: Kevin Masterson < k.m.masterson@gmail.com >
 
