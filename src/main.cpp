@@ -9,7 +9,7 @@ Created By:
 
 */
 
-// #define TEST_CFG
+#define TEST_CFG
 #define TEST_RETURN_TEST
 
 #define _CRT_SECURE_NO_WARNINGS 1
@@ -30,6 +30,7 @@ plugininfo_t g_plugininfo = {
 	"Test plugin",								// description of plugin
 	TEST_QMM_BUILDER,							// author of plugin
 	"https://github.com/thecybermind/test_qmm",	// website of plugin
+	"TEST",										// logtag of plugin
 };
 eng_syscall_t g_syscall = nullptr;
 mod_vmMain_t g_vmMain = nullptr;
@@ -63,7 +64,7 @@ C_DLLEXPORT void QMM_Detach() {
 
 C_DLLEXPORT intptr_t QMM_vmMain(intptr_t cmd, intptr_t* args) {
 	if (cmd == GAME_INIT) {
-		QMM_WRITEQMMLOG(QMM_VARARGS("Test_QMM loaded! Game engine: %s\n", QMM_GETGAMEENGINE()), QMMLOG_INFO, "TEST_QMM");
+		QMM_WRITEQMMLOG(PLID, QMM_VARARGS(PLID, "Test_QMM loaded! Game engine: %s\n", QMM_GETGAMEENGINE(PLID)), QMMLOG_INFO);
 
 #ifdef TEST_CFG
 		/*
@@ -79,29 +80,29 @@ C_DLLEXPORT intptr_t QMM_vmMain(intptr_t cmd, intptr_t* args) {
 		*/
 
 		// scalars
-		QMM_WRITEQMMLOG(QMM_VARARGS("test/int: %d\n", QMM_CFG_GETINT("test/int")), QMMLOG_INFO, "TEST_QMM");
-		QMM_WRITEQMMLOG(QMM_VARARGS("test/int2: %d\n", QMM_CFG_GETINT("test/int2")), QMMLOG_INFO, "TEST_QMM");
-		QMM_WRITEQMMLOG(QMM_VARARGS("test2/int: %d\n", QMM_CFG_GETINT("test2/int")), QMMLOG_INFO, "TEST_QMM");
-		QMM_WRITEQMMLOG(QMM_VARARGS("test/bool: %d\n", QMM_CFG_GETBOOL("test/bool")), QMMLOG_INFO, "TEST_QMM");
-		QMM_WRITEQMMLOG(QMM_VARARGS("test/bool2: %d\n", QMM_CFG_GETBOOL("test/bool2")), QMMLOG_INFO, "TEST_QMM");
-		QMM_WRITEQMMLOG(QMM_VARARGS("test/str: %s\n", QMM_CFG_GETSTR("test/str")), QMMLOG_INFO, "TEST_QMM");
-		QMM_WRITEQMMLOG(QMM_VARARGS("test/str2: %s\n", QMM_CFG_GETSTR("test/str2")), QMMLOG_INFO, "TEST_QMM");
+		QMM_WRITEQMMLOG(PLID, QMM_VARARGS(PLID, "test/int: %d\n", QMM_CFG_GETINT(PLID, "test/int")), QMMLOG_INFO);
+		QMM_WRITEQMMLOG(PLID, QMM_VARARGS(PLID, "test/int2: %d\n", QMM_CFG_GETINT(PLID, "test/int2")), QMMLOG_INFO);
+		QMM_WRITEQMMLOG(PLID, QMM_VARARGS(PLID, "test2/int: %d\n", QMM_CFG_GETINT(PLID, "test2/int")), QMMLOG_INFO);
+		QMM_WRITEQMMLOG(PLID, QMM_VARARGS(PLID, "test/bool: %d\n", QMM_CFG_GETBOOL(PLID, "test/bool")), QMMLOG_INFO);
+		QMM_WRITEQMMLOG(PLID, QMM_VARARGS(PLID, "test/bool2: %d\n", QMM_CFG_GETBOOL(PLID, "test/bool2")), QMMLOG_INFO);
+		QMM_WRITEQMMLOG(PLID, QMM_VARARGS(PLID, "test/str: %s\n", QMM_CFG_GETSTR(PLID, "test/str")), QMMLOG_INFO);
+		QMM_WRITEQMMLOG(PLID, QMM_VARARGS(PLID, "test/str2: %s\n", QMM_CFG_GETSTR(PLID, "test/str2")), QMMLOG_INFO);
 
 		// int arr
-		int* iarr = QMM_CFG_GETARRAYINT("test/intarr");
-		QMM_WRITEQMMLOG(QMM_VARARGS("test/intarr: %d %d %d %d %d\n", iarr[0], iarr[1], iarr[2], iarr[3], iarr[4]), QMMLOG_INFO, "TEST_QMM");
-		int* iarr2 = QMM_CFG_GETARRAYINT("test/intarr2");
-		QMM_WRITEQMMLOG(QMM_VARARGS("test/intarr2: %d %d\n", iarr2[0], iarr2[1]), QMMLOG_INFO, "TEST_QMM");
-		int* iarr3 = QMM_CFG_GETARRAYINT("test/intarr3");
-		QMM_WRITEQMMLOG(QMM_VARARGS("test/intarr3: %d %d\n", iarr3[0], iarr3[1]), QMMLOG_INFO, "TEST_QMM");
+		int* iarr = QMM_CFG_GETARRAYINT(PLID, "test/intarr");
+		QMM_WRITEQMMLOG(PLID, QMM_VARARGS(PLID, "test/intarr: %d %d %d %d %d\n", iarr[0], iarr[1], iarr[2], iarr[3], iarr[4]), QMMLOG_INFO);
+		int* iarr2 = QMM_CFG_GETARRAYINT(PLID, "test/intarr2");
+		QMM_WRITEQMMLOG(PLID, QMM_VARARGS(PLID, "test/intarr2: %d %d\n", iarr2[0], iarr2[1]), QMMLOG_INFO);
+		int* iarr3 = QMM_CFG_GETARRAYINT(PLID, "test/intarr3");
+		QMM_WRITEQMMLOG(PLID, QMM_VARARGS(PLID, "test/intarr3: %d %d\n", iarr3[0], iarr3[1]), QMMLOG_INFO);
 
 		// str arr
-		const char** sarr = QMM_CFG_GETARRAYSTR("test/strarr");
-		QMM_WRITEQMMLOG(QMM_VARARGS("test/strarr: %s %s %s %s\n", sarr[0], sarr[1], sarr[2], sarr[3]), QMMLOG_INFO, "TEST_QMM");
-		const char** sarr2 = QMM_CFG_GETARRAYSTR("test/strarr2");
-		QMM_WRITEQMMLOG(QMM_VARARGS("test/strarr2: %s\n", sarr2[0]), QMMLOG_INFO, "TEST_QMM");
-		const char** sarr3 = QMM_CFG_GETARRAYSTR("test/strarr3");
-		QMM_WRITEQMMLOG(QMM_VARARGS("test/strarr3: %s\n", sarr3[0]), QMMLOG_INFO, "TEST_QMM");
+		const char** sarr = QMM_CFG_GETARRAYSTR(PLID, "test/strarr");
+		QMM_WRITEQMMLOG(PLID, QMM_VARARGS(PLID, "test/strarr: %s %s %s %s\n", sarr[0], sarr[1], sarr[2], sarr[3]), QMMLOG_INFO);
+		const char** sarr2 = QMM_CFG_GETARRAYSTR(PLID, "test/strarr2");
+		QMM_WRITEQMMLOG(PLID, QMM_VARARGS(PLID, "test/strarr2: %s\n", sarr2[0]), QMMLOG_INFO);
+		const char** sarr3 = QMM_CFG_GETARRAYSTR(PLID, "test/strarr3");
+		QMM_WRITEQMMLOG(PLID, QMM_VARARGS(PLID, "test/strarr3: %s\n", sarr3[0]), QMMLOG_INFO);
 #endif // TEST_CFG
 
 	}
