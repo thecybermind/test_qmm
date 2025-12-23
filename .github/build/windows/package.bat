@@ -5,22 +5,23 @@ rem copy ..\README.md .\
 rem copy ..\LICENSE .\
 
 for %%x in (
-        Q3A
-        RTCWMP
-		RTCWSP
-		WET
-		JAMP
+        JAMP
 		JASP
 		JK2MP
 		JK2SP
-		SOF2MP
-		STVOYHM
-		STVOYSP
-		STEF2
 		MOHAA
 		MOHBT
 		MOHSH
 		QUAKE2
+		Q3A
+		RTCWMP
+		RTCWSP
+		SIN
+		SOF2MP
+		STEF2
+		STVOYHM
+		STVOYSP
+		WET
        ) do (
          copy ..\bin\Release-%%x\x86\test_qmm_%%x.dll .\
          copy ..\bin\Release-%%x\x64\test_qmm_x86_64_%%x.dll .\         
