@@ -39,6 +39,6 @@ Created By:
 
 #define TEST_QMM_VERSION_DWORD	TEST_QMM_VERSION_MAJOR , TEST_QMM_VERSION_MINOR , TEST_QMM_VERSION_REV , 0
 #define TEST_QMM_COMPILE		__TIME__ " " __DATE__
-#define TEST_QMM_BUILDER		"cybermind"
+#define TEST_QMM_BUILDER		"Kevin Masterson"
 
 #endif // __TEST_QMM_VERSION_H__
