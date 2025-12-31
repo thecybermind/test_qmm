@@ -9,8 +9,10 @@ Created By:
 
 */
 
-#define TEST_CFG
-#define TEST_RETURN_TEST
+// #define TEST_CFG
+// #define TEST_RETURN_TEST
+// #define TEST_BROADCAST
+// #define TEST_COMMAND
 
 #define _CRT_SECURE_NO_WARNINGS 1
 
@@ -113,7 +115,49 @@ C_DLLEXPORT intptr_t QMM_vmMain(intptr_t cmd, intptr_t* args) {
 	}
 #endif // TEST_RETURN_TEST
 
-	QMM_RET_IGNORED(1);
+#ifdef TEST_COMMAND
+	if (cmd == GAME_CLIENT_COMMAND) {
+		char buf[16] = "";
+		intptr_t clientnum = args[0];
+
+		// some engines use this arg/buf/buflen syntax for G_ARGV while others return
+		// the char*, so we use QMM_ARGV to handle both methods automatically
+		QMM_ARGV(PLID, 0, buf, sizeof(buf));
+
+		// example showing how to use infostrings
+		if (!strcmp(buf, "myinfo")) {
+			char userinfo[MAX_INFO_STRING];
+			g_syscall(G_GET_USERINFO, clientnum, userinfo, sizeof(userinfo));
+			const char* name = QMM_INFOVALUEFORKEY(PLID, userinfo, "name");
+#if defined(GAME_Q2_ENGINE)
+			g_syscall(G_CLIENT_PRINT, clientnum, PRINT_HIGH, QMM_VARARGS(PLID, "[STUB_QMM] Your name is: '%s'\n", name));
+#else
+			g_syscall(G_SEND_SERVER_COMMAND, clientnum, QMM_VARARGS(PLID, "print \"[STUB_QMM] Your name is: '%s'\"\n", name));
+#endif
+			QMM_RET_SUPERCEDE(1);
+		}
+#if !defined(GAME_Q2_ENGINE)
+		// purely an example to show entity/client access and how it might be different per-game
+		else if (!strcmp(buf, "myweapon")) {
+			gclient_t* client = CLIENT_FROM_NUM(clientnum);
+#if defined(GAME_STEF2)
+			int left = client->ps.activeItems[ITEM_NAME_WEAPON_LEFT];
+			int right = client->ps.activeItems[ITEM_NAME_WEAPON_RIGHT];
+			g_syscall(G_SEND_SERVER_COMMAND, clientnum, QMM_VARARGS(PLID, "print \"[STUB_QMM] Your weapons are: %d %d\"\n", left, right));
+#else
+#if defined(GAME_MOHAA) || defined(GAME_MOHSH) || defined(GAME_MOHBT)
+			int item = client->ps.activeItems[ITEM_WEAPON];
+#else
+			int item = client->ps.weapon;
+#endif // MOHAA, MOHSH, MOHBT
+			g_syscall(G_SEND_SERVER_COMMAND, clientnum, QMM_VARARGS(PLID, "print \"[STUB_QMM] Your weapon is: %d\"\n", item));
+#endif // GAME_STEF2
+			QMM_RET_SUPERCEDE(1);
+		}
+#endif // !GAME_Q2R && !GAME_QUAKE2
+	}
+#endif // TEST_COMMAND
+	QMM_RET_IGNORED(0);
 }
 
 
@@ -128,7 +172,7 @@ C_DLLEXPORT intptr_t QMM_syscall(intptr_t cmd, intptr_t* args) {
 		// g_syscall(G_PRINT, "(TEST_QMM) Entity data stored!\n");
 	}
 
-	QMM_RET_IGNORED(1);
+	QMM_RET_IGNORED(0);
 }
 
 
@@ -140,11 +184,29 @@ C_DLLEXPORT intptr_t QMM_vmMain_Post(intptr_t cmd, intptr_t* args) {
 	}
 #endif // TEST_RETURN_TEST
 
-	QMM_RET_IGNORED(1);
+#ifdef TEST_BROADCAST
+	// example of broadcasting a message to other plugins
+	if (cmd == GAME_SHUTDOWN)
+		QMM_PLUGIN_BROADCAST(PLID, "BYE", nullptr, 0);
+#endif // TEST_BROADCAST
+
+	QMM_RET_IGNORED(0);
 }
 
 
 C_DLLEXPORT intptr_t QMM_syscall_Post(intptr_t cmd, intptr_t* args) {
+#ifdef TEST_RETURN_TEST
+	if (cmd == G_ARGC) {
+		QMM_WRITEQMMLOG(PLID, QMM_VARARGS(PLID, "G_ARGC return value: %d\n", QMM_VAR_RETURN(intptr_t)), QMMLOG_INFO);
+	}
+#endif // TEST_RETURN_TEST
 
-	QMM_RET_IGNORED(1);
+	QMM_RET_IGNORED(0);
+}
+
+
+C_DLLEXPORT void QMM_PluginMessage(plid_t from_plid, const char* message, void* buf, intptr_t buflen) {
+#ifdef TEST_BROADCAST
+	QMM_WRITEQMMLOG(PLID, QMM_VARARGS(PLID, "Received plugin message \"%s\" with a %d-byte buffer", message, buflen), QMMLOG_INFO);
+#endif // TEST_BROADCAST
 }
