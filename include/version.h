@@ -9,8 +9,8 @@ Created By:
 
 */
 
-#ifndef __TEST_QMM_VERSION_H__
-#define __TEST_QMM_VERSION_H__
+#ifndef TEST_QMM_VERSION_H
+#define TEST_QMM_VERSION_H
 
 #define STRINGIFY(x) STRINGIFY2(x)
 #define STRINGIFY2(x) #x
@@ -41,4 +41,4 @@ Created By:
 #define TEST_QMM_COMPILE		__TIME__ " " __DATE__
 #define TEST_QMM_BUILDER		"Kevin Masterson"
 
-#endif // __TEST_QMM_VERSION_H__
+#endif // TEST_QMM_VERSION_H
