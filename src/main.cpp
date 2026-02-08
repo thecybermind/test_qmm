@@ -42,9 +42,9 @@ pluginvars_t* g_pluginvars = nullptr;
 // store the game's entity and client info
 gentity_t* g_gents = nullptr;
 intptr_t g_numgents = 0;
-intptr_t g_gentsize = sizeof(gentity_t);
+intptr_t g_gentsize = 1;
 gclient_t* g_clients = nullptr;
-intptr_t g_clientsize = sizeof(gclient_t);
+intptr_t g_clientsize = 1;
 
 
 C_DLLEXPORT void QMM_Query(plugininfo_t** pinfo) {
@@ -205,7 +205,7 @@ C_DLLEXPORT intptr_t QMM_syscall_Post(intptr_t cmd, intptr_t* args) {
 }
 
 
-C_DLLEXPORT void QMM_PluginMessage(plid_t from_plid, const char* message, void* buf, intptr_t buflen) {
+C_DLLEXPORT void QMM_PluginMessage(plid_t from_plid, const char* message, void* buf, intptr_t buflen, int is_broadcast) {
 #ifdef TEST_BROADCAST
 	QMM_WRITEQMMLOG(PLID, QMM_VARARGS(PLID, "Received plugin message \"%s\" with a %d-byte buffer", message, buflen), QMMLOG_INFO);
 #endif // TEST_BROADCAST

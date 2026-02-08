@@ -70,6 +70,9 @@ Created By:
     #define GAME_Q2_ENGINE
 #elif defined(GAME_SOF2MP)
     #include <sof2mp/game/g_local.h>
+#elif defined(GAME_SOF2SP)
+    // #include <sof2mp/game/g_local.h>
+    #include <game_sof2sp.h>
 #elif defined(GAME_STEF2)
     #include <stef2/game/g_local.h>
     #include <stef2/game/bg_public.h>
