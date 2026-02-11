@@ -20,7 +20,7 @@ Created By:
 
 #include "version.h"
 #include "game.h"
-
+#include <stdlib.h>
 #include <string.h>
 
 pluginres_t* g_result = nullptr;
@@ -69,15 +69,52 @@ C_DLLEXPORT intptr_t QMM_vmMain(intptr_t cmd, intptr_t* args) {
 		QMM_WRITEQMMLOG(PLID, QMM_VARARGS(PLID, "Test_QMM loaded! Game engine: %s\n", QMM_GETGAMEENGINE(PLID)), QMMLOG_INFO);
 	}
 
-	//health= client+208?
-	//armor= client+212?
-
 	if (cmd == GAME_CONSOLE_COMMAND) {
-		QMM_WRITEQMMLOG(PLID, QMM_VARARGS(PLID, "client0=%p clientsize=%d\n", g_clients, g_clientsize), QMMLOG_INFO);
-		for (int entnum = 0; entnum <= 10; entnum++) {
-			gentity_t* ent = ENT_FROM_NUM(entnum);
-			QMM_WRITEQMMLOG(PLID, QMM_VARARGS(PLID, "ent%d=%p ent%d->classname=%s\n", entnum, ent, entnum, ent->classname), QMMLOG_INFO);
+		char arg0[20], arg1[20], arg2[20], arg3[20];
+		QMM_ARGV(PLID, 0, arg0, sizeof(arg0));
+		//health= client+208?
+		//armor= client+212?
+		if (!strcmp(arg0, "setclient")) {
+			if (g_syscall(G_ARGC) != 3) {
+				QMM_WRITEQMMLOG(PLID, "setclient <offset> <value>\n", QMMLOG_INFO);
+				QMM_RET_SUPERCEDE(1);
+			}
+			QMM_ARGV(PLID, 1, arg1, sizeof(arg1));
+			QMM_ARGV(PLID, 2, arg2, sizeof(arg2));
+			int* x = (int*)((char*)g_clients + atoi(arg1));
+			*x = atoi(arg2);
 		}
+		else if (!strcmp(arg0, "setent")) {
+			if (g_syscall(G_ARGC) != 4) {
+				QMM_WRITEQMMLOG(PLID, "setent <entnum> <offset> <value>\n", QMMLOG_INFO);
+				QMM_RET_SUPERCEDE(1);
+			}
+			QMM_ARGV(PLID, 1, arg1, sizeof(arg1));
+			QMM_ARGV(PLID, 2, arg2, sizeof(arg2));
+			QMM_ARGV(PLID, 3, arg3, sizeof(arg3));
+			int* x = (int*)((char*)g_gents + (atoi(arg1) * g_gentsize) + atoi(arg2));
+			*x = atoi(arg3);
+		}
+		else if (!strcmp(arg0, "clientdump")) {
+			//QMM_WRITEQMMLOG(PLID, QMM_VARARGS(PLID, "client0=%p clientsize=%d\n", g_clients, g_clientsize), QMMLOG_INFO);
+			for (int clientnum = 0; clientnum <= 0; clientnum++) {
+				gclient_t* client = CLIENT_FROM_NUM(clientnum);
+				for (int offset = 0; offset < g_clientsize; offset += 4) {
+					int* x = (int*)((char*)client + offset);
+					QMM_WRITEQMMLOG(PLID, QMM_VARARGS(PLID, "client%d=%p client%d->%d=%X\n", clientnum, client, clientnum, offset, *x), QMMLOG_INFO);
+				}
+			}
+		}
+		else if (!strcmp(arg0, "entdump")) {
+			for (int entnum = 0; entnum <= 10; entnum++) {
+				gentity_t* ent = ENT_FROM_NUM(entnum);
+				for (int offset = 0; offset < g_gentsize; offset += 4) {
+					int* x = (int*)((char*)ent + offset);
+					QMM_WRITEQMMLOG(PLID, QMM_VARARGS(PLID, "ent%d=%p ent%d->%d=%X\n", entnum, ent, entnum, offset, *x), QMMLOG_INFO);
+				}
+			}
+		}
+		QMM_RET_SUPERCEDE(1);
 	}
 
 #ifdef TEST_CFG
