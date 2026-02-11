@@ -67,8 +67,21 @@ C_DLLEXPORT void QMM_Detach() {
 C_DLLEXPORT intptr_t QMM_vmMain(intptr_t cmd, intptr_t* args) {
 	if (cmd == GAME_INIT) {
 		QMM_WRITEQMMLOG(PLID, QMM_VARARGS(PLID, "Test_QMM loaded! Game engine: %s\n", QMM_GETGAMEENGINE(PLID)), QMMLOG_INFO);
+	}
+
+	//health= client+208?
+	//armor= client+212?
+
+	if (cmd == GAME_CONSOLE_COMMAND) {
+		QMM_WRITEQMMLOG(PLID, QMM_VARARGS(PLID, "client0=%p clientsize=%d\n", g_clients, g_clientsize), QMMLOG_INFO);
+		for (int entnum = 0; entnum <= 10; entnum++) {
+			gentity_t* ent = ENT_FROM_NUM(entnum);
+			QMM_WRITEQMMLOG(PLID, QMM_VARARGS(PLID, "ent%d=%p ent%d->classname=%s\n", entnum, ent, entnum, ent->classname), QMMLOG_INFO);
+		}
+	}
 
 #ifdef TEST_CFG
+	if (cmd == GAME_INIT) {
 		/*
 		"test": {
 			"int": 123,
@@ -105,12 +118,11 @@ C_DLLEXPORT intptr_t QMM_vmMain(intptr_t cmd, intptr_t* args) {
 		QMM_WRITEQMMLOG(PLID, QMM_VARARGS(PLID, "test/strarr2: %s\n", sarr2[0]), QMMLOG_INFO);
 		const char** sarr3 = QMM_CFG_GETARRAYSTR(PLID, "test/strarr3");
 		QMM_WRITEQMMLOG(PLID, QMM_VARARGS(PLID, "test/strarr3: %s\n", sarr3[0]), QMMLOG_INFO);
+	}
 #endif // TEST_CFG
 
-	}
-
 #ifdef TEST_RETURN_TEST
-	else if (cmd == GAME_CLIENT_CONNECT) {
+	if (cmd == GAME_CLIENT_CONNECT) {
 		QMM_RET_SUPERCEDE((intptr_t)"Kicked, pre");
 	}
 #endif // TEST_RETURN_TEST
@@ -157,6 +169,7 @@ C_DLLEXPORT intptr_t QMM_vmMain(intptr_t cmd, intptr_t* args) {
 #endif // !GAME_Q2R && !GAME_QUAKE2
 	}
 #endif // TEST_COMMAND
+
 	QMM_RET_IGNORED(0);
 }
 
@@ -168,8 +181,7 @@ C_DLLEXPORT intptr_t QMM_syscall(intptr_t cmd, intptr_t* args) {
 		g_gentsize = args[2];
 		g_clients = (gclient_t*)(args[3]);
 		g_clientsize = args[4];
-
-		// g_syscall(G_PRINT, "(TEST_QMM) Entity data stored!\n");
+		QMM_WRITEQMMLOG(PLID, QMM_VARARGS(PLID, "LocateGameData(%p, %d, %d, %p, %d)\n", g_gents, g_numgents, g_gentsize, g_clients, g_clientsize), QMMLOG_INFO);
 	}
 
 	QMM_RET_IGNORED(0);
