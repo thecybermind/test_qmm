@@ -13,6 +13,7 @@ Created By:
 // #define TEST_RETURN_TEST
 // #define TEST_BROADCAST
 // #define TEST_COMMAND
+// #define TEST_SOF2SP_GENTITY
 
 #define _CRT_SECURE_NO_WARNINGS 1
 
@@ -69,6 +70,7 @@ C_DLLEXPORT intptr_t QMM_vmMain(intptr_t cmd, intptr_t* args) {
 		QMM_WRITEQMMLOG(PLID, QMM_VARARGS(PLID, "Test_QMM loaded! Game engine: %s\n", QMM_GETGAMEENGINE(PLID)), QMMLOG_INFO);
 	}
 
+#ifdef TEST_SOF2SP_GENTITY
 	if (cmd == GAME_CONSOLE_COMMAND) {
 		char arg0[20], arg1[20], arg2[20], arg3[20];
 		QMM_ARGV(PLID, 0, arg0, sizeof(arg0));
@@ -116,6 +118,7 @@ C_DLLEXPORT intptr_t QMM_vmMain(intptr_t cmd, intptr_t* args) {
 		}
 		QMM_RET_SUPERCEDE(1);
 	}
+#endif // TEST_SOF2SP_GENTITY
 
 #ifdef TEST_CFG
 	if (cmd == GAME_INIT) {
