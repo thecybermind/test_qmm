@@ -59,7 +59,7 @@ C_DLLEXPORT int QMM_Attach(eng_syscall_t engfunc, mod_vmMain_t modfunc, pluginre
 	QMM_SAVE_VARS();
 
 	// make sure this DLL is loaded only in the right engine
-	if (strcmp(QMM_GETGAMEENGINE(PLID), GAME_STR) != 0)
+	if (strcmp(QMM_GETGAMEENGINE(), GAME_STR) != 0)
 		return 0;
 
 	return 1;
@@ -76,15 +76,15 @@ void (*old_die)(gentity_t*, gentity_t*, gentity_t*, int, int) = nullptr;
 
 // new hook function
 void new_die_real(gentity_t* self, gentity_t* inflictor, gentity_t* attacker, int damage, int mod) {
-	QMM_WRITEQMMLOG(PLID, QMM_VARARGS(PLID, "Oh no someone died! die(%p, %p, %p, %d, %d)\n", self, inflictor, attacker, damage, mod), QMMLOG_INFO);
+	QMM_WRITEQMMLOG(QMM_VARARGS("Oh no someone died! die(%p, %p, %p, %d, %d)\n", self, inflictor, attacker, damage, mod), QMMLOG_INFO);
 	
-	if (QMM_ISQVM(PLID)) {
+	if (QMM_ISQVM()) {
 		int args[5] = { SETPTR(self, int), SETPTR(inflictor, int), SETPTR(attacker, int), damage, mod };
-		QMM_QVM_EXEC_FUNC(PLID, (int)old_die, 5, args);
+		QMM_QVM_EXEC_FUNC((int)old_die, 5, args);
 	}
 	else
 		old_die(self, inflictor, attacker, damage, mod);
-	QMM_WRITEQMMLOG(PLID, "After QVM call!\n", QMMLOG_INFO);
+	QMM_WRITEQMMLOG("After QVM call!\n", QMMLOG_INFO);
 }
 
 // function pointer for new ent->die function (default to new_die_real)
@@ -94,14 +94,14 @@ void (*new_die)(gentity_t*, gentity_t*, gentity_t*, int, int) = new_die_real;
 
 C_DLLEXPORT intptr_t QMM_vmMain(intptr_t cmd, intptr_t* args) {
 	if (cmd == GAME_INIT) {
-		QMM_WRITEQMMLOG(PLID, QMM_VARARGS(PLID, "Test_QMM loaded! Game engine: %s\n", QMM_GETGAMEENGINE(PLID)), QMMLOG_INFO);
+		QMM_WRITEQMMLOG(QMM_VARARGS("Test_QMM loaded! Game engine: %s\n", QMM_GETGAMEENGINE()), QMMLOG_INFO);
 	}
 
 #ifdef TEST_QVM_FUNC
 	if (cmd == GAME_INIT) {
 		// if QVM, register QVM func ID for new_die. don't overwrite pointer if not QVM
-		if (QMM_ISQVM(PLID))
-			new_die = (decltype(new_die))QMM_QVM_REGISTER_FUNC(PLID);
+		if (QMM_ISQVM())
+			new_die = (decltype(new_die))QMM_QVM_REGISTER_FUNC();
 	}
 	else if (cmd == GAME_CLIENT_THINK) {
 		gentity_t* ent = ENT_FROM_NUM(args[0]);
@@ -120,37 +120,37 @@ C_DLLEXPORT intptr_t QMM_vmMain(intptr_t cmd, intptr_t* args) {
 #ifdef TEST_SOF2SP_GENTITY
 	if (cmd == GAME_CONSOLE_COMMAND) {
 		char arg0[20], arg1[20], arg2[20], arg3[20];
-		QMM_ARGV(PLID, 0, arg0, sizeof(arg0));
+		QMM_ARGV(0, arg0, sizeof(arg0));
 		//health= client+208?
 		//armor= client+212?
 		if (!strcmp(arg0, "setclient")) {
 			if (g_syscall(G_ARGC) != 3) {
-				QMM_WRITEQMMLOG(PLID, "setclient <offset> <value>\n", QMMLOG_INFO);
+				QMM_WRITEQMMLOG("setclient <offset> <value>\n", QMMLOG_INFO);
 				QMM_RET_SUPERCEDE(1);
 			}
-			QMM_ARGV(PLID, 1, arg1, sizeof(arg1));
-			QMM_ARGV(PLID, 2, arg2, sizeof(arg2));
+			QMM_ARGV(1, arg1, sizeof(arg1));
+			QMM_ARGV(2, arg2, sizeof(arg2));
 			int* x = (int*)((char*)g_clients + atoi(arg1));
 			*x = atoi(arg2);
 		}
 		else if (!strcmp(arg0, "setent")) {
 			if (g_syscall(G_ARGC) != 4) {
-				QMM_WRITEQMMLOG(PLID, "setent <entnum> <offset> <value>\n", QMMLOG_INFO);
+				QMM_WRITEQMMLOG("setent <entnum> <offset> <value>\n", QMMLOG_INFO);
 				QMM_RET_SUPERCEDE(1);
 			}
-			QMM_ARGV(PLID, 1, arg1, sizeof(arg1));
-			QMM_ARGV(PLID, 2, arg2, sizeof(arg2));
-			QMM_ARGV(PLID, 3, arg3, sizeof(arg3));
+			QMM_ARGV(1, arg1, sizeof(arg1));
+			QMM_ARGV(2, arg2, sizeof(arg2));
+			QMM_ARGV(3, arg3, sizeof(arg3));
 			int* x = (int*)((char*)g_gents + (atoi(arg1) * g_gentsize) + atoi(arg2));
 			*x = atoi(arg3);
 		}
 		else if (!strcmp(arg0, "clientdump")) {
-			//QMM_WRITEQMMLOG(PLID, QMM_VARARGS(PLID, "client0=%p clientsize=%d\n", g_clients, g_clientsize), QMMLOG_INFO);
+			//QMM_WRITEQMMLOG(QMM_VARARGS("client0=%p clientsize=%d\n", g_clients, g_clientsize), QMMLOG_INFO);
 			for (int clientnum = 0; clientnum <= 0; clientnum++) {
 				gclient_t* client = CLIENT_FROM_NUM(clientnum);
 				for (int offset = 0; offset < g_clientsize; offset += 4) {
 					int* x = (int*)((char*)client + offset);
-					QMM_WRITEQMMLOG(PLID, QMM_VARARGS(PLID, "client%d=%p client%d->%d=%X\n", clientnum, client, clientnum, offset, *x), QMMLOG_INFO);
+					QMM_WRITEQMMLOG(QMM_VARARGS("client%d=%p client%d->%d=%X\n", clientnum, client, clientnum, offset, *x), QMMLOG_INFO);
 				}
 			}
 		}
@@ -159,7 +159,7 @@ C_DLLEXPORT intptr_t QMM_vmMain(intptr_t cmd, intptr_t* args) {
 				gentity_t* ent = ENT_FROM_NUM(entnum);
 				for (int offset = 0; offset < g_gentsize; offset += 4) {
 					int* x = (int*)((char*)ent + offset);
-					QMM_WRITEQMMLOG(PLID, QMM_VARARGS(PLID, "ent%d=%p ent%d->%d=%X\n", entnum, ent, entnum, offset, *x), QMMLOG_INFO);
+					QMM_WRITEQMMLOG(QMM_VARARGS("ent%d=%p ent%d->%d=%X\n", entnum, ent, entnum, offset, *x), QMMLOG_INFO);
 				}
 			}
 		}
@@ -182,29 +182,29 @@ C_DLLEXPORT intptr_t QMM_vmMain(intptr_t cmd, intptr_t* args) {
 		*/
 
 		// scalars
-		QMM_WRITEQMMLOG(PLID, QMM_VARARGS(PLID, "test/int: %d\n", QMM_CFG_GETINT(PLID, "test/int")), QMMLOG_INFO);
-		QMM_WRITEQMMLOG(PLID, QMM_VARARGS(PLID, "test/int2: %d\n", QMM_CFG_GETINT(PLID, "test/int2")), QMMLOG_INFO);
-		QMM_WRITEQMMLOG(PLID, QMM_VARARGS(PLID, "test2/int: %d\n", QMM_CFG_GETINT(PLID, "test2/int")), QMMLOG_INFO);
-		QMM_WRITEQMMLOG(PLID, QMM_VARARGS(PLID, "test/bool: %d\n", QMM_CFG_GETBOOL(PLID, "test/bool")), QMMLOG_INFO);
-		QMM_WRITEQMMLOG(PLID, QMM_VARARGS(PLID, "test/bool2: %d\n", QMM_CFG_GETBOOL(PLID, "test/bool2")), QMMLOG_INFO);
-		QMM_WRITEQMMLOG(PLID, QMM_VARARGS(PLID, "test/str: %s\n", QMM_CFG_GETSTR(PLID, "test/str")), QMMLOG_INFO);
-		QMM_WRITEQMMLOG(PLID, QMM_VARARGS(PLID, "test/str2: %s\n", QMM_CFG_GETSTR(PLID, "test/str2")), QMMLOG_INFO);
+		QMM_WRITEQMMLOG(QMM_VARARGS("test/int: %d\n", QMM_CFG_GETINT("test/int")), QMMLOG_INFO);
+		QMM_WRITEQMMLOG(QMM_VARARGS("test/int2: %d\n", QMM_CFG_GETINT("test/int2")), QMMLOG_INFO);
+		QMM_WRITEQMMLOG(QMM_VARARGS("test2/int: %d\n", QMM_CFG_GETINT("test2/int")), QMMLOG_INFO);
+		QMM_WRITEQMMLOG(QMM_VARARGS("test/bool: %d\n", QMM_CFG_GETBOOL("test/bool")), QMMLOG_INFO);
+		QMM_WRITEQMMLOG(QMM_VARARGS("test/bool2: %d\n", QMM_CFG_GETBOOL("test/bool2")), QMMLOG_INFO);
+		QMM_WRITEQMMLOG(QMM_VARARGS("test/str: %s\n", QMM_CFG_GETSTR("test/str")), QMMLOG_INFO);
+		QMM_WRITEQMMLOG(QMM_VARARGS("test/str2: %s\n", QMM_CFG_GETSTR("test/str2")), QMMLOG_INFO);
 
 		// int arr
-		int* iarr = QMM_CFG_GETARRAYINT(PLID, "test/intarr");
-		QMM_WRITEQMMLOG(PLID, QMM_VARARGS(PLID, "test/intarr: %d %d %d %d %d\n", iarr[0], iarr[1], iarr[2], iarr[3], iarr[4]), QMMLOG_INFO);
-		int* iarr2 = QMM_CFG_GETARRAYINT(PLID, "test/intarr2");
-		QMM_WRITEQMMLOG(PLID, QMM_VARARGS(PLID, "test/intarr2: %d %d\n", iarr2[0], iarr2[1]), QMMLOG_INFO);
-		int* iarr3 = QMM_CFG_GETARRAYINT(PLID, "test/intarr3");
-		QMM_WRITEQMMLOG(PLID, QMM_VARARGS(PLID, "test/intarr3: %d %d\n", iarr3[0], iarr3[1]), QMMLOG_INFO);
+		int* iarr = QMM_CFG_GETARRAYINT("test/intarr");
+		QMM_WRITEQMMLOG(QMM_VARARGS("test/intarr: %d %d %d %d %d\n", iarr[0], iarr[1], iarr[2], iarr[3], iarr[4]), QMMLOG_INFO);
+		int* iarr2 = QMM_CFG_GETARRAYINT("test/intarr2");
+		QMM_WRITEQMMLOG(QMM_VARARGS("test/intarr2: %d %d\n", iarr2[0], iarr2[1]), QMMLOG_INFO);
+		int* iarr3 = QMM_CFG_GETARRAYINT("test/intarr3");
+		QMM_WRITEQMMLOG(QMM_VARARGS("test/intarr3: %d %d\n", iarr3[0], iarr3[1]), QMMLOG_INFO);
 
 		// str arr
-		const char** sarr = QMM_CFG_GETARRAYSTR(PLID, "test/strarr");
-		QMM_WRITEQMMLOG(PLID, QMM_VARARGS(PLID, "test/strarr: %s %s %s %s\n", sarr[0], sarr[1], sarr[2], sarr[3]), QMMLOG_INFO);
-		const char** sarr2 = QMM_CFG_GETARRAYSTR(PLID, "test/strarr2");
-		QMM_WRITEQMMLOG(PLID, QMM_VARARGS(PLID, "test/strarr2: %s\n", sarr2[0]), QMMLOG_INFO);
-		const char** sarr3 = QMM_CFG_GETARRAYSTR(PLID, "test/strarr3");
-		QMM_WRITEQMMLOG(PLID, QMM_VARARGS(PLID, "test/strarr3: %s\n", sarr3[0]), QMMLOG_INFO);
+		const char** sarr = QMM_CFG_GETARRAYSTR("test/strarr");
+		QMM_WRITEQMMLOG(QMM_VARARGS("test/strarr: %s %s %s %s\n", sarr[0], sarr[1], sarr[2], sarr[3]), QMMLOG_INFO);
+		const char** sarr2 = QMM_CFG_GETARRAYSTR("test/strarr2");
+		QMM_WRITEQMMLOG(QMM_VARARGS("test/strarr2: %s\n", sarr2[0]), QMMLOG_INFO);
+		const char** sarr3 = QMM_CFG_GETARRAYSTR("test/strarr3");
+		QMM_WRITEQMMLOG(QMM_VARARGS("test/strarr3: %s\n", sarr3[0]), QMMLOG_INFO);
 	}
 #endif // TEST_CFG
 
@@ -221,17 +221,17 @@ C_DLLEXPORT intptr_t QMM_vmMain(intptr_t cmd, intptr_t* args) {
 
 		// some engines use this arg/buf/buflen syntax for G_ARGV while others return
 		// the char*, so we use QMM_ARGV to handle both methods automatically
-		QMM_ARGV(PLID, 0, buf, sizeof(buf));
+		QMM_ARGV(0, buf, sizeof(buf));
 
 		// example showing how to use infostrings
 		if (!strcmp(buf, "myinfo")) {
 			char userinfo[MAX_INFO_STRING];
 			g_syscall(G_GET_USERINFO, clientnum, userinfo, sizeof(userinfo));
-			const char* name = QMM_INFOVALUEFORKEY(PLID, userinfo, "name");
+			const char* name = QMM_INFOVALUEFORKEY(userinfo, "name");
 #if defined(GAME_Q2_ENGINE)
-			g_syscall(G_CLIENT_PRINT, clientnum, PRINT_HIGH, QMM_VARARGS(PLID, "[STUB_QMM] Your name is: '%s'\n", name));
+			g_syscall(G_CLIENT_PRINT, clientnum, PRINT_HIGH, QMM_VARARGS("[STUB_QMM] Your name is: '%s'\n", name));
 #else
-			g_syscall(G_SEND_SERVER_COMMAND, clientnum, QMM_VARARGS(PLID, "print \"[STUB_QMM] Your name is: '%s'\"\n", name));
+			g_syscall(G_SEND_SERVER_COMMAND, clientnum, QMM_VARARGS("print \"[STUB_QMM] Your name is: '%s'\"\n", name));
 #endif
 			QMM_RET_SUPERCEDE(1);
 		}
@@ -242,14 +242,14 @@ C_DLLEXPORT intptr_t QMM_vmMain(intptr_t cmd, intptr_t* args) {
 #if defined(GAME_STEF2)
 			int left = client->ps.activeItems[ITEM_NAME_WEAPON_LEFT];
 			int right = client->ps.activeItems[ITEM_NAME_WEAPON_RIGHT];
-			g_syscall(G_SEND_SERVER_COMMAND, clientnum, QMM_VARARGS(PLID, "print \"[STUB_QMM] Your weapons are: %d %d\"\n", left, right));
+			g_syscall(G_SEND_SERVER_COMMAND, clientnum, QMM_VARARGS("print \"[STUB_QMM] Your weapons are: %d %d\"\n", left, right));
 #else
 #if defined(GAME_MOHAA) || defined(GAME_MOHSH) || defined(GAME_MOHBT)
 			int item = client->ps.activeItems[ITEM_WEAPON];
 #else
 			int item = client->ps.weapon;
 #endif // MOHAA, MOHSH, MOHBT
-			g_syscall(G_SEND_SERVER_COMMAND, clientnum, QMM_VARARGS(PLID, "print \"[STUB_QMM] Your weapon is: %d\"\n", item));
+			g_syscall(G_SEND_SERVER_COMMAND, clientnum, QMM_VARARGS("print \"[STUB_QMM] Your weapon is: %d\"\n", item));
 #endif // GAME_STEF2
 			QMM_RET_SUPERCEDE(1);
 		}
@@ -268,7 +268,7 @@ C_DLLEXPORT intptr_t QMM_syscall(intptr_t cmd, intptr_t* args) {
 		g_gentsize = args[2];
 		g_clients = (gclient_t*)(args[3]);
 		g_clientsize = args[4];
-		//QMM_WRITEQMMLOG(PLID, QMM_VARARGS(PLID, "LocateGameData(%p, %d, %d, %p, %d)\n", g_gents, g_numgents, g_gentsize, g_clients, g_clientsize), QMMLOG_INFO);
+		//QMM_WRITEQMMLOG(QMM_VARARGS("LocateGameData(%p, %d, %d, %p, %d)\n", g_gents, g_numgents, g_gentsize, g_clients, g_clientsize), QMMLOG_INFO);
 	}
 
 	QMM_RET_IGNORED(0);
@@ -285,7 +285,7 @@ C_DLLEXPORT intptr_t QMM_vmMain_Post(intptr_t cmd, intptr_t* args) {
 #ifdef TEST_BROADCAST
 	// example of broadcasting a message to other plugins
 	if (cmd == GAME_SHUTDOWN)
-		QMM_PLUGIN_BROADCAST(PLID, "BYE", nullptr, 0);
+		QMM_PLUGIN_BROADCAST("BYE", nullptr, 0);
 #endif // TEST_BROADCAST
 
 	QMM_RET_IGNORED(0);
@@ -295,7 +295,7 @@ C_DLLEXPORT intptr_t QMM_vmMain_Post(intptr_t cmd, intptr_t* args) {
 C_DLLEXPORT intptr_t QMM_syscall_Post(intptr_t cmd, intptr_t* args) {
 #ifdef TEST_RETURN_TEST
 	if (cmd == G_ARGC) {
-		QMM_WRITEQMMLOG(PLID, QMM_VARARGS(PLID, "G_ARGC return value: %d\n", QMM_VAR_RETURN(intptr_t)), QMMLOG_INFO);
+		QMM_WRITEQMMLOG(QMM_VARARGS("G_ARGC return value: %d\n", QMM_VAR_RETURN(intptr_t)), QMMLOG_INFO);
 	}
 #endif // TEST_RETURN_TEST
 
@@ -305,14 +305,14 @@ C_DLLEXPORT intptr_t QMM_syscall_Post(intptr_t cmd, intptr_t* args) {
 
 C_DLLEXPORT void QMM_PluginMessage(plid_t from_plid, const char* message, void* buf, intptr_t buflen, int is_broadcast) {
 #ifdef TEST_BROADCAST
-	QMM_WRITEQMMLOG(PLID, QMM_VARARGS(PLID, "Received plugin message \"%s\" with a %d-byte buffer", message, buflen), QMMLOG_INFO);
+	QMM_WRITEQMMLOG(QMM_VARARGS("Received plugin message \"%s\" with a %d-byte buffer", message, buflen), QMMLOG_INFO);
 #endif // TEST_BROADCAST
 }
 
 
 C_DLLEXPORT int QMM_QVMHandler(int func, int* args) {
 #ifdef TEST_QVM_FUNC
-	QMM_WRITEQMMLOG(PLID, QMM_VARARGS(PLID, "QMM_QVMHandler(%d) called\n", func), QMMLOG_DEBUG);
+	QMM_WRITEQMMLOG(QMM_VARARGS("QMM_QVMHandler(%d) called\n", func), QMMLOG_DEBUG);
 	if (func == (int)new_die) {
 		new_die_real(GETPTR(args[0], gentity_t*), GETPTR(args[1], gentity_t*), GETPTR(args[2], gentity_t*), args[3], args[4]);
 	}
