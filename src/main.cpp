@@ -14,7 +14,7 @@ Created By:
 // #define TEST_BROADCAST
 // #define TEST_COMMAND
 // #define TEST_SOF2SP_GENTITY
-#define TEST_QVM
+// #define TEST_QVM_FUNC
 
 #define _CRT_SECURE_NO_WARNINGS 1
 
@@ -66,7 +66,7 @@ C_DLLEXPORT void QMM_Detach() {
 }
 
 
-#ifdef TEST_QVM
+#ifdef TEST_QVM_FUNC
 int old_die = 0;
 int new_die_id = 0;
 void new_die(gentity_t* self, gentity_t* inflictor, gentity_t* attacker, int damage, int mod) {
@@ -74,6 +74,8 @@ void new_die(gentity_t* self, gentity_t* inflictor, gentity_t* attacker, int dam
 	
 	int args[] = { SETPTR(self, int), SETPTR(inflictor, int), SETPTR(attacker, int), damage, mod};
 	QMM_QVM_EXEC_FUNC(PLID, old_die, 5, args);
+
+	QMM_WRITEQMMLOG(PLID, "After QVM call!\n", QMMLOG_INFO);
 }
 #endif // TEST_QVM
 
@@ -83,9 +85,11 @@ C_DLLEXPORT intptr_t QMM_vmMain(intptr_t cmd, intptr_t* args) {
 		QMM_WRITEQMMLOG(PLID, QMM_VARARGS(PLID, "Test_QMM loaded! Game engine: %s\n", QMM_GETGAMEENGINE(PLID)), QMMLOG_INFO);
 	}
 
+#ifdef TEST_QVM_FUNC
 	if (cmd == GAME_INIT) {
 		new_die_id = QMM_QVM_REGISTER_FUNC(PLID);
 	}
+#endif // TEST_QVM
 
 #ifdef TEST_SOF2SP_GENTITY
 	if (cmd == GAME_CONSOLE_COMMAND) {
@@ -238,10 +242,10 @@ C_DLLEXPORT intptr_t QMM_syscall(intptr_t cmd, intptr_t* args) {
 		g_gentsize = args[2];
 		g_clients = (gclient_t*)(args[3]);
 		g_clientsize = args[4];
-		QMM_WRITEQMMLOG(PLID, QMM_VARARGS(PLID, "LocateGameData(%p, %d, %d, %p, %d)\n", g_gents, g_numgents, g_gentsize, g_clients, g_clientsize), QMMLOG_INFO);
+		//QMM_WRITEQMMLOG(PLID, QMM_VARARGS(PLID, "LocateGameData(%p, %d, %d, %p, %d)\n", g_gents, g_numgents, g_gentsize, g_clients, g_clientsize), QMMLOG_INFO);
 	}
 
-#ifdef TEST_QVM
+#ifdef TEST_QVM_FUNC
 	if (cmd == G_GET_USERCMD) {
 		gentity_t* ent = ENT_FROM_NUM(args[0]);
 		if (!ent)
@@ -254,10 +258,12 @@ C_DLLEXPORT intptr_t QMM_syscall(intptr_t cmd, intptr_t* args) {
 			&& (client->ps.stats[STAT_WEAPONS] & (1 << WP_MACHINEGUN)) == (1 << WP_MACHINEGUN)
 			) {
 
-			if (!old_die)
+			if (!old_die) {
 				old_die = (int)ent->die;
+				QMM_WRITEQMMLOG(PLID, QMM_VARARGS(PLID, "saving old_die %d\n", old_die), QMMLOG_DEBUG);
+			}
 			ent->die = (decltype(ent->die))new_die_id;
-			QMM_WRITEQMMLOG(PLID, QMM_VARARGS(PLID, "ent(%p)->die set to %d (was %d)!\n", ent, new_die_id, old_die), QMMLOG_INFO);
+			QMM_WRITEQMMLOG(PLID, QMM_VARARGS(PLID, "ent(%p)->die set to %d!\n", ent, new_die_id), QMMLOG_DEBUG);
 		}
 	}
 #endif // TEST_QVM
@@ -301,11 +307,15 @@ C_DLLEXPORT void QMM_PluginMessage(plid_t from_plid, const char* message, void* 
 }
 
 
-#ifdef TEST_QVM
 C_DLLEXPORT int QMM_QVMHandler(uint8_t* membase, int cmd, int* args) {
+#ifdef TEST_QVM_FUNC
+	QMM_WRITEQMMLOG(PLID, QMM_VARARGS(PLID, "QMM_QVMHandler(%d) called\n", cmd), QMMLOG_DEBUG);
 	if (cmd == new_die_id) {
+		QMM_WRITEQMMLOG(PLID, "calling new_die\n", QMMLOG_DEBUG);
 		new_die(GETPTR(args[0], gentity_t*), GETPTR(args[1], gentity_t*), GETPTR(args[2], gentity_t*), args[3], args[4]);
 		return 0;
 	}
-}
 #endif // TEST_QVM
+
+	return 0;
+}
