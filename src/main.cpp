@@ -15,6 +15,7 @@ Created By:
 // #define TEST_COMMAND
 // #define TEST_SOF2SP_GENTITY
 // #define TEST_QVM_FUNC
+// #define TEST_ARGV2
 
 #define _CRT_SECURE_NO_WARNINGS 1
 
@@ -116,6 +117,15 @@ C_DLLEXPORT intptr_t QMM_vmMain(intptr_t cmd, intptr_t* args) {
 		}
 	}
 #endif // TEST_QVM_FUNC
+
+#ifdef TEST_ARGV2
+	if (cmd == GAME_CONSOLE_COMMAND) {
+		QMM_WRITEQMMLOG(QMM_VARARGS("configstring 0: \"%s\"\n", QMM_GETCONFIGSTRING2(0)), QMMLOG_DEBUG);
+		for (int i = 0; i < g_syscall(G_ARGC); i++) {
+			QMM_WRITEQMMLOG(QMM_VARARGS("Arg %d: \"%s\"\n", i, QMM_ARGV2(i)), QMMLOG_DEBUG);
+		}
+	}
+#endif // TEST_ARGV2
 
 #ifdef TEST_SOF2SP_GENTITY
 	if (cmd == GAME_CONSOLE_COMMAND) {
