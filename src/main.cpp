@@ -14,7 +14,7 @@ Created By:
 // #define TEST_BROADCAST
 // #define TEST_COMMAND
 // #define TEST_SOF2SP_GENTITY
-#define TEST_QVM_FUNC
+// #define TEST_QVM_FUNC
 
 #define _CRT_SECURE_NO_WARNINGS 1
 
