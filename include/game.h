@@ -76,6 +76,10 @@ Created By:
     #include <sin/game/g_local.h>
     #include <game_sin.h>
     #define GAME_Q2_ENGINE
+#elif defined(GAME_SOF)
+    #include <sof/gamecpp/g_local.h>
+    #include <game_sof.h>
+    #define GAME_Q2_ENGINE
 #elif defined(GAME_SOF2MP)
     #include <sof2mp/game/g_local.h>
     #include <game_sof2mp.h>
