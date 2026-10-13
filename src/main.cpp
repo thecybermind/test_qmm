@@ -26,7 +26,6 @@ Created By:
 #include <stdlib.h>
 #include <string.h>
 
-plugin_res* g_result = nullptr;
 plugin_info g_plugininfo = {
 	QMM_PIFV_MAJOR,								// plugin interface version major
 	QMM_PIFV_MINOR,								// plugin interface version minor
@@ -38,7 +37,9 @@ plugin_info g_plugininfo = {
 	"TEST",										// logtag of plugin
 };
 eng_syscall g_syscall = nullptr;
+eng_syscall_args g_syscall_args = nullptr;
 mod_vmMain g_vmMain = nullptr;
+mod_vmMain_args g_vmMain_args = nullptr;
 plugin_funcs* g_pluginfuncs = nullptr;
 plugin_vars* g_pluginvars = nullptr;
 
@@ -56,7 +57,7 @@ C_DLLEXPORT void QMM_Query(plugin_info** pinfo) {
 }
 
 
-C_DLLEXPORT int QMM_Attach(eng_syscall engfunc, mod_vmMain modfunc, plugin_res* presult, plugin_funcs* pluginfuncs, plugin_vars* pluginvars) {
+C_DLLEXPORT int QMM_Attach(eng_syscall engfunc, eng_syscall_args engfunc_args, mod_vmMain modfunc, mod_vmMain_args modfunc_args, plugin_funcs* pluginfuncs, plugin_vars* pluginvars) {
 	QMM_SAVE_VARS();
 
 	// make sure this DLL is loaded only in the right engine
@@ -93,7 +94,7 @@ void (*new_die)(gentity_t*, gentity_t*, gentity_t*, int, int) = new_die_real;
 #endif // TEST_QVM_FUNC
 
 
-C_DLLEXPORT intptr_t QMM_vmMain(intptr_t cmd, intptr_t* args) {
+C_DLLEXPORT intptr_t QMM_vmMain(result_vars* results, intptr_t cmd, intptr_t* args) {
 	if (cmd == GAME_INIT) {
 		QMM_WRITEQMMLOG(QMMLOG_INFO, "Test_QMM loaded! Game engine: %s\n", QMM_GETGAMEENGINE());
 	}
@@ -271,7 +272,7 @@ C_DLLEXPORT intptr_t QMM_vmMain(intptr_t cmd, intptr_t* args) {
 }
 
 
-C_DLLEXPORT intptr_t QMM_syscall(intptr_t cmd, intptr_t* args) {
+C_DLLEXPORT intptr_t QMM_syscall(result_vars* results, intptr_t cmd, intptr_t* args) {
 	if (cmd == G_LOCATE_GAME_DATA) {
 		g_gents = (gentity_t*)(args[0]);
 		g_numgents = args[1];
@@ -285,7 +286,7 @@ C_DLLEXPORT intptr_t QMM_syscall(intptr_t cmd, intptr_t* args) {
 }
 
 
-C_DLLEXPORT intptr_t QMM_vmMain_Post(intptr_t cmd, intptr_t* args) {
+C_DLLEXPORT intptr_t QMM_vmMain_Post(result_vars* results, intptr_t cmd, intptr_t* args) {
 #ifdef TEST_RETURN_TEST
 	if (cmd == GAME_CLIENT_CONNECT) {
 		QMM_RET_SUPERCEDE((intptr_t)"Kicked, post");
@@ -302,7 +303,7 @@ C_DLLEXPORT intptr_t QMM_vmMain_Post(intptr_t cmd, intptr_t* args) {
 }
 
 
-C_DLLEXPORT intptr_t QMM_syscall_Post(intptr_t cmd, intptr_t* args) {
+C_DLLEXPORT intptr_t QMM_syscall_Post(result_vars* results, intptr_t cmd, intptr_t* args) {
 #ifdef TEST_RETURN_TEST
 	if (cmd == G_ARGC) {
 		QMM_WRITEQMMLOG(QMMLOG_INFO, "G_ARGC return value: %d\n", QMM_VAR_RETURN(intptr_t));
